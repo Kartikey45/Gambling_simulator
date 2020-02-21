@@ -8,9 +8,13 @@ BET=1
 halfStake=$(($stake/2))
 lossLimit=$(($halfStake*$stake/$stake))
 gainLimit=$(($stake+$lossLimit))
-totalDays=20
+totalDays=30
 initialStake=100
 GainOrLoss=0
+overallProfit=0
+overallLoss=0
+win=0
+loss=0
 
 #CHECK THE CONDITIONS FOR GAIN OR LOSS
 for((day=1; day<=$totalDays; day++))
@@ -24,25 +28,31 @@ do
 		if [ $(( RANDOM%2 )) -eq $BET ]
 		then
 			stake=$(($stake+$BET)) 
-			(( win++ ))
 		else
 			stake=$(($stake-$BET))
-			(( loss-- ))
 		fi
 	done
-	echo "Daily stake changed : $stake"
+	#echo $stake
 	if [ $stake -gt $initialStake ]
 	then
 		stakeToBe=$(($stake-$initialStake))
+		overallProfit=$(($overallProfit+$stakeToBe))
+		(( win++ ))
 	elif [ $stake -lt $initialStake ]
 	then
 		stakeToBe=$(($stake-$initialStake))
+		overallLoss=$(($overallLoss+$stakeToBe))
+		(( loss++ ))
 	fi
-	echo "Stake changed by :$stakeToBe"
-	echo ""
+	echo $stakeToBe
 	GainOrLoss=$(($GainOrLoss+$stakeToBe))
 	stake=100
 done
 
-#DISPLAY TOTAL GAIN OR LOSS OF 20 DAYS
-echo "Overall gain or loss : $GainOrLoss"
+#DISPLAY TOTAL DAYS WON AND LOST
+echo "Days won : $win"
+echo "Days loss : $loss"
+
+#DISPLAY OVERALL PROFIT AND LOSS OF ONE MONTH
+echo "Overall profit of one month : $overallProfit"
+echo "Overall loss of one month : $overallLoss"
