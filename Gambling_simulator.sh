@@ -10,13 +10,10 @@ lossLimit=$(($halfStake*$stake/$stake))
 gainLimit=$(($stake+$lossLimit))
 totalDays=30
 initialStake=100
-GainOrLoss=0
-overallProfit=0
-overallLoss=0
-win=0
-loss=0
+stake2=100
 
-#CHECK THE CONDITIONS FOR GAIN OR LOSS
+#CALCULATE THE SUM OF DAILY LOSS OR GAIN 
+declare -A dict
 for((day=1; day<=$totalDays; day++))
 do	
 	while [ $stake -ne $lossLimit ]
@@ -32,27 +29,33 @@ do
 			stake=$(($stake-$BET))
 		fi
 	done
-	#echo $stake
 	if [ $stake -gt $initialStake ]
 	then
-		stakeToBe=$(($stake-$initialStake))
-		overallProfit=$(($overallProfit+$stakeToBe))
-		(( win++ ))
+		profit_loss=$(($stake-$initialStake))
 	elif [ $stake -lt $initialStake ]
 	then
-		stakeToBe=$(($stake-$initialStake))
-		overallLoss=$(($overallLoss+$stakeToBe))
-		(( loss++ ))
+		profit_loss=$(($stake-$initialStake))
 	fi
-	echo $stakeToBe
-	GainOrLoss=$(($GainOrLoss+$stakeToBe))
+	stake2=$(($stake2+$profit_loss))	 
+	echo "$profit_loss : $stake2"
+	dict[$day]=$stake2
 	stake=100
 done
 
-#DISPLAY TOTAL DAYS WON AND LOST
-echo "Days won : $win"
-echo "Days loss : $loss"
+#DISPLAY VALUES AND INDEXES IN THE DICTIONARY
+echo "values : ${dict[@]}"
+echo "keys   : ${!dict[@]}"
 
-#DISPLAY OVERALL PROFIT AND LOSS OF ONE MONTH
-echo "Overall profit of one month : $overallProfit"
-echo "Overall loss of one month : $overallLoss"
+#DISPLAY SORTED DICTIONARY IN DESCENDING ORDER 
+echo "luckiest :" 
+for k in ${!dict[@]}
+do
+	echo $k '-' ${dict[$k]}
+done|sort -rn -k3
+
+#DISPLAY SORTED DICTIONARY IN ASCENDING ORDER
+echo "unluckiest :"
+for k in ${!dict[@]}
+do
+	echo $k '-' ${dict[$k]}
+done|sort -n -k3
