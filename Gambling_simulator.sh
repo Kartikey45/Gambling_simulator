@@ -51,11 +51,11 @@ echo "luckiest :"
 for k in ${!dict[@]}
 do
 	echo $k '-' ${dict[$k]}
-done|sort -rn -k3
+done|sort -rn -k3|head -1
 
 #DISPLAY SORTED DICTIONARY IN ASCENDING ORDER
 echo "unluckiest :"
 for k in ${!dict[@]}
 do
 	echo $k '-' ${dict[$k]}
-done|sort -n -k3
+done|sort -rn -k3|tail -1
