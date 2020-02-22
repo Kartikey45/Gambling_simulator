@@ -1,8 +1,6 @@
 #!/bin/bash -x
 
-echo "*******************Wellcome to Gambling Simulator******************"
-
-#CONSTANT VARIABLE INITIALIZE
+#CONSTANT AND  VARIABLE INITIALIZE
 stake=100
 BET=1
 halfStake=$(($stake/2))
@@ -10,52 +8,71 @@ lossLimit=$(($halfStake*$stake/$stake))
 gainLimit=$(($stake+$lossLimit))
 totalDays=30
 initialStake=100
-stake2=100
+GainOrLoss=0
+NO_GAIN_NO_LOSS=0
 
-#CALCULATE THE SUM OF DAILY LOSS OR GAIN 
-declare -A dict
-for((day=1; day<=$totalDays; day++))
-do	
-	while [ $stake -ne $lossLimit ]
-	do
-		if [ $stake -eq $gainLimit ]
+#CHECK THE CONDITIONS FOR GAIN OR LOSS
+while [[ $GainOrLoss -gt $NO_GAIN_NO_LOSS || $GainOrLoss -eq $NO_GAIN_NO_LOSS ]]
+do
+	declare -A dict
+	for((day=1; day<=$totalDays; day++))
+	do	
+		while [ $stake -ne $lossLimit ]
+		do
+			if [ $stake -eq $gainLimit ]
+			then
+				break
+			fi
+			if [ $(( RANDOM%2 )) -eq $BET ]
+			then
+				stake=$(($stake+$BET))
+			else
+				stake=$(($stake-$BET))
+			fi
+		done
+		echo "Daily stake changed : $stake"
+		if [ $stake -gt $initialStake ]
 		then
-			break
-		fi
-		if [ $(( RANDOM%2 )) -eq $BET ]
+			stakeToBe=$(($stake-$initialStake))
+		elif [ $stake -lt $initialStake ]
 		then
-			stake=$(($stake+$BET)) 
-		else
-			stake=$(($stake-$BET))
+			stakeToBe=$(($stake-$initialStake))
 		fi
+		echo "Stake changed by :$stakeToBe"
+		echo ""
+		GainOrLoss=$(($GainOrLoss+$stakeToBe))
+		dict[$day]=$GainOrLoss
+		stake=100
 	done
-	if [ $stake -gt $initialStake ]
+
+	#DISPLAY DAY AND DAILY STAKE GENERATED
+	echo "Daily stake: ${dict[@]}"
+	echo "Day: ${!dict[@]}"
+
+	#DISPLAY LUCKIEST DAY OF THE MONTH
+	echo "luckiest day :"
+	for k in ${!dict[@]}
+	do
+		echo $k '-' ${dict[$k]}
+	done|sort -rn -k3|head -1
+
+	#DISPLAY UNLUCKIEST DAY OF THE MONTH
+	echo "Unluckiest day :"
+	for k in ${!dict[@]}
+	do
+		echo $k '-' ${dict[$k]}
+	done|sort -rn -k3|tail -1
+
+	#DISPLAY TOTAL GAIN OR LOSS OF one month
+	echo "Overall gain or loss : $GainOrLoss"
+	if [ $GainOrLoss -lt $NO_GAIN_NO_LOSS ]
 	then
-		profit_loss=$(($stake-$initialStake))
-	elif [ $stake -lt $initialStake ]
+		echo "money lost !!!!"
+		break
+	elif [ $GainOrLoss -gt $NO_GAIN_NO_LOSS ]
 	then
-		profit_loss=$(($stake-$initialStake))
+		echo "Player wins !!!!"
+		continue
 	fi
-	stake2=$(($stake2+$profit_loss))	 
-	echo "$profit_loss : $stake2"
-	dict[$day]=$stake2
-	stake=100
+	GainOrLoss=$NO_GAIN_NO_LOSS
 done
-
-#DISPLAY VALUES AND INDEXES IN THE DICTIONARY
-echo "values : ${dict[@]}"
-echo "keys   : ${!dict[@]}"
-
-#DISPLAY SORTED DICTIONARY IN DESCENDING ORDER 
-echo "luckiest :" 
-for k in ${!dict[@]}
-do
-	echo $k '-' ${dict[$k]}
-done|sort -rn -k3|head -1
-
-#DISPLAY SORTED DICTIONARY IN ASCENDING ORDER
-echo "unluckiest :"
-for k in ${!dict[@]}
-do
-	echo $k '-' ${dict[$k]}
-done|sort -rn -k3|tail -1
